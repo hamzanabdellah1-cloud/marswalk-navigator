@@ -15,7 +15,10 @@
           <h1>MarsWalk Navigator</h1>
           <p class="tagline">Plan the walk. Know what to look for. Understand the trade-offs.</p>
         </div>
-        <button type="button" id="guide-open">Guided demo</button>
+        <div class="top-actions">
+          <button type="button" id="guide-open">Start guided demo</button>
+          <button type="button" id="print-brief">Print mission brief</button>
+        </div>
       </div>
       <p class="ribbon" role="note">Conceptual route for a hackathon prototype—not a verified safe route.</p>
     </header>
@@ -38,26 +41,45 @@
           <button type="button" role="tab" id="tab-terrain" data-layer="terrain" aria-selected="false" aria-controls="map-panel" tabindex="-1">Terrain</button>
           <button type="button" role="tab" id="tab-geology" data-layer="geology" aria-selected="false" aria-controls="map-panel" tabindex="-1">Geology</button>
         </div>
-        <div class="map-frame" id="map-panel" role="tabpanel" aria-labelledby="tab-orbital">
-          <img id="map-photo" src="assets/base-map.jpg" alt="Grayscale orbital view of ridged ground. Lines on top are a conceptual route.">
+        <div class="map-frame" id="map-panel" role="tabpanel" tabindex="0" aria-labelledby="tab-orbital" aria-describedby="map-hint">
+          <img id="map-photo" src="assets/maps/orbital.jpg" alt="Grayscale HiRISE view of boxwork ridges. Lines on top are conceptual routes.">
           <div id="map-missing" class="map-missing" hidden>
             <p>Layer not available yet</p>
           </div>
           <svg id="routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div id="map-cursor" hidden></div>
           <div id="markers"></div>
         </div>
-        <p id="map-caption" class="caption">Local orbital image. Gale mosaic credit is in Sources.</p>
+        <p id="map-caption" class="caption">MRO HiRISE Curiosity roving-site mosaic. NASA/JPL Mars Trek.</p>
+        <p id="map-keys" class="helper">Focus the map, move with the arrow keys, and press Enter to place a point.</p>
+        <form id="coord-form" class="coord-form">
+          <label>Across % <input id="coord-x" type="number" min="0" max="100" step="0.1" value="50"></label>
+          <label>Down % <input id="coord-y" type="number" min="0" max="100" step="0.1" value="50"></label>
+          <button type="submit" id="coord-place">Place point</button>
+        </form>
       </section>
 
       <aside class="side" aria-label="Walk plan">
         <section class="card" aria-labelledby="routes-heading">
-          <h2 id="routes-heading">Route comparison</h2>
-          <p class="helper">Select a card. Both lines stay visible.</p>
+          <h2 id="routes-heading">Route finder</h2>
+          <p id="map-hint" class="helper">Click the map to set the start.</p>
+          <p id="click-note" class="helper" role="status"></p>
+          <div class="point-actions">
+            <button type="button" id="reset-points">Reset points</button>
+          </div>
+          <div class="weights">
+            <label>Avoid steep ground <input id="weight-slope" type="range" min="0" max="120" value="0"></label>
+            <label>Favour science terrain <input id="weight-science" type="range" min="0" max="80" value="0"></label>
+            <label>Slope limit <span id="limit-value">15°</span> <input id="slope-limit" type="range" min="5" max="30" value="15"></label>
+          </div>
+          <p id="limit-note" class="helper">Your slope limit. Not a NASA or crew limit.</p>
+          <p id="custom-note" class="helper" aria-live="polite"></p>
           <div id="route-cards" class="route-grid"></div>
         </section>
 
         <section class="card" aria-labelledby="stops-heading">
           <h2 id="stops-heading">Science stops</h2>
+          <p class="helper">Example photos of what to investigate. A point you place is not a Curiosity observation site.</p>
           <div id="stop-cards" class="stop-list"></div>
         </section>
 
@@ -65,6 +87,8 @@
           <h2 id="trust-heading" tabindex="-1">Data confidence</h2>
           <p class="helper">Trust the red rows least for a short walk.</p>
           <ul id="confidence" class="trust-list"></ul>
+          <h3 id="unknown-heading">What this does not know</h3>
+          <ul id="unknown" class="unknown-list"></ul>
         </section>
       </aside>
     </main>
@@ -85,13 +109,16 @@
       <img id="modal-photo" alt="">
       <p id="modal-missing" class="muted" hidden>Photo not available yet</p>
       <p id="modal-look"></p>
-      <p id="modal-note"></p>
+      <p id="modal-why"></p>
       <p id="modal-tools"></p>
       <p id="modal-credit"></p>
+      <p><a id="modal-source" href="#">JPL image page</a></p>
     </div>
   </div>
 
-  <script src="assets/data.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/grid.js"></script>
+  <script src="pathfinder.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

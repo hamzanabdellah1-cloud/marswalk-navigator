@@ -1,0 +1,175 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "main",
+        "name": "Route A (Main)",
+        "tradeoffs": [
+          "Shorter line between the same four points.",
+          "Crosses the ridge field more directly.",
+          "Steepest step is a little higher."
+        ],
+        "points": [
+          {
+            "id": "start",
+            "mark": "S",
+            "name": "Start",
+            "x": 48,
+            "y": 74
+          },
+          {
+            "id": "stop1",
+            "mark": "1",
+            "name": "Stop 1",
+            "x": 58,
+            "y": 58,
+            "stop": 0
+          },
+          {
+            "id": "stop2",
+            "mark": "2",
+            "name": "Stop 2",
+            "x": 66,
+            "y": 44,
+            "stop": 1
+          },
+          {
+            "id": "return",
+            "mark": "R",
+            "name": "Return",
+            "x": 46,
+            "y": 78
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            137.30229462456538,
+            -4.878786432300079
+          ],
+          [
+            137.30382150173853,
+            -4.876960810766693
+          ],
+          [
+            137.30504300347707,
+            -4.87536339192498
+          ],
+          [
+            137.30198924913074,
+            -4.879242837683426
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "alternate",
+        "name": "Route B (Alternate)",
+        "tradeoffs": [
+          "Longer line, with a bend through the eastern ridges.",
+          "Same stops, with more ground between them.",
+          "Average step is a little higher."
+        ],
+        "points": [
+          {
+            "id": "start",
+            "mark": "S",
+            "name": "Start",
+            "x": 48,
+            "y": 74
+          },
+          {
+            "id": "bend1",
+            "name": "Bend",
+            "x": 70,
+            "y": 80
+          },
+          {
+            "id": "bend2",
+            "name": "Bend",
+            "x": 78,
+            "y": 68
+          },
+          {
+            "id": "stop1",
+            "mark": "1",
+            "name": "Stop 1",
+            "x": 58,
+            "y": 58,
+            "stop": 0
+          },
+          {
+            "id": "bend3",
+            "name": "Bend",
+            "x": 76,
+            "y": 48
+          },
+          {
+            "id": "stop2",
+            "mark": "2",
+            "name": "Stop 2",
+            "x": 66,
+            "y": 44,
+            "stop": 1
+          },
+          {
+            "id": "bend4",
+            "name": "Bend",
+            "x": 58,
+            "y": 66
+          },
+          {
+            "id": "return",
+            "mark": "R",
+            "name": "Return",
+            "x": 46,
+            "y": 78
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            137.30229462456538,
+            -4.878786432300079
+          ],
+          [
+            137.3056537543463,
+            -4.879471040375099
+          ],
+          [
+            137.30687525608485,
+            -4.87810182422506
+          ],
+          [
+            137.30382150173853,
+            -4.876960810766693
+          ],
+          [
+            137.30656988065022,
+            -4.875819797308327
+          ],
+          [
+            137.30504300347707,
+            -4.87536339192498
+          ],
+          [
+            137.30382150173853,
+            -4.877873621533387
+          ],
+          [
+            137.30198924913074,
+            -4.879242837683426
+          ]
+        ]
+      }
+    }
+  ]
+}
