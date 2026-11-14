@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MarsWalk Navigator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip" href="#map-heading">Skip to map</a>
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-row">
+        <div>
+          <h1>MarsWalk Navigator</h1>
+          <p class="tagline">Plan the walk. Know what to look for. Understand the trade-offs.</p>
+        </div>
+        <button type="button" id="guide-open">Guided demo</button>
+      </div>
+      <p class="ribbon" role="note">Conceptual route for a hackathon prototype—not a verified safe route.</p>
+    </header>
+
+    <div id="guide" class="guide" hidden role="region" aria-label="Guided demo">
+      <p id="guide-count"></p>
+      <p id="guide-caption" aria-live="polite"></p>
+      <div class="guide-actions">
+        <button type="button" id="guide-back">Back</button>
+        <button type="button" id="guide-next">Next</button>
+        <button type="button" id="guide-close">Close</button>
+      </div>
+    </div>
+
+    <main class="layout">
+      <section class="map-column" aria-labelledby="map-heading">
+        <h2 id="map-heading" class="visually-hidden">Map</h2>
+        <div class="tabs" role="tablist" aria-label="Map view">
+          <button type="button" role="tab" id="tab-orbital" data-layer="orbital" aria-selected="true" aria-controls="map-panel">Orbital image</button>
+          <button type="button" role="tab" id="tab-terrain" data-layer="terrain" aria-selected="false" aria-controls="map-panel" tabindex="-1">Terrain</button>
+          <button type="button" role="tab" id="tab-geology" data-layer="geology" aria-selected="false" aria-controls="map-panel" tabindex="-1">Geology</button>
+        </div>
+        <div class="map-frame" id="map-panel" role="tabpanel" aria-labelledby="tab-orbital">
+          <img id="map-photo" src="assets/base-map.jpg" alt="Grayscale orbital view of ridged ground. Lines on top are a conceptual route.">
+          <div id="map-missing" class="map-missing" hidden>
+            <p>Layer not available yet</p>
+          </div>
+          <svg id="routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+          <div id="markers"></div>
+        </div>
+        <p id="map-caption" class="caption">Local orbital image. Gale mosaic credit is in Sources.</p>
+      </section>
+
+      <aside class="side" aria-label="Walk plan">
+        <section class="card" aria-labelledby="routes-heading">
+          <h2 id="routes-heading">Route comparison</h2>
+          <p class="helper">Select a card. Both lines stay visible.</p>
+          <div id="route-cards" class="route-grid"></div>
+        </section>
+
+        <section class="card" aria-labelledby="stops-heading">
+          <h2 id="stops-heading">Science stops</h2>
+          <div id="stop-cards" class="stop-list"></div>
+        </section>
+
+        <section class="card" aria-labelledby="trust-heading">
+          <h2 id="trust-heading" tabindex="-1">Data confidence</h2>
+          <p class="helper">Trust the red rows least for a short walk.</p>
+          <ul id="confidence" class="trust-list"></ul>
+        </section>
+      </aside>
+    </main>
+
+    <footer>
+      <details>
+        <summary>Sources and credits</summary>
+        <div id="sources"></div>
+      </details>
+    </footer>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button type="button" id="modal-close">Close</button>
+      <h2 id="modal-title"></h2>
+      <img id="modal-photo" alt="">
+      <p id="modal-missing" class="muted" hidden>Photo not available yet</p>
+      <p id="modal-look"></p>
+      <p id="modal-note"></p>
+      <p id="modal-tools"></p>
+      <p id="modal-credit"></p>
+    </div>
+  </div>
+
+  <script src="assets/data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
