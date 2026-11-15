@@ -1,0 +1,122 @@
+{
+  "assets": [
+    {
+      "id": "orbital_map",
+      "kind": "image",
+      "path": "assets/maps/orbital.jpg",
+      "source_name": "Mars MSL Gale Merged Orthophoto Mosaic 25 cm, Color Version, v3",
+      "source_url": "https://astrogeology.usgs.gov/search/map/mars_msl_gale_merged_orthophoto_mosaic_25cm",
+      "credit": "Parker, T., & Calef III, F. J. (2016), Mars MSL Gale Merged Orthophoto Mosaic 25 cm, Color Version, v3. USGS Astrogeology Science Center. Please credit authors.",
+      "license_or_use": "Use constraints: None; please credit authors.",
+      "retrieved_on": "2026-11-15",
+      "resolution": "0.25 m/pixel source crop; web JPEG preview resized to 1600 px wide",
+      "notes": "2 km × 2 km selected visual context only. The route calculator uses a separate Gale boxwork DEM window in data/route-area.json. Original georeferenced context clip: raw/orbital_clip.tif.",
+      "status": "READY"
+    },
+    {
+      "id": "dem",
+      "kind": "raster",
+      "path": "data/dem/route_dem_source.tif",
+      "source_name": "MSL Gale Merged DEM 1 m source crop for the separate boxwork route window",
+      "source_url": "https://astrogeology.usgs.gov/search/map/mars_msl_gale_merged_dem_1m",
+      "credit": "Parker, T., & Calef III, F. J.; USGS Astrogeology Science Center / MSL project, served via NASA/JPL Mars Trek. Please credit authors.",
+      "license_or_use": "USGS product use constraints: none; please credit authors.",
+      "retrieved_on": "Copied into nasa_space_2 on 2026-11-15; original retrieval date not recorded.",
+      "resolution": "Mosaic labeled 1 m; per-pixel source resolution unknown. Route grid spacing is 3.005 m.",
+      "notes": "Covers only data/route-area.json, a separate 900 m × 677.5 m Gale boxwork window. It does not cover the 2 km context image in data/area.json. Some mosaic pixels may come from coarser inputs; see data/dem/README.md.",
+      "status": "READY"
+    },
+    {
+      "id": "geology",
+      "kind": "vector",
+      "path": "data/geology/tanaka2014_gale.geojson",
+      "source_name": "Geologic Map of Mars, USGS SIM 3292 (1:20,000,000)",
+      "source_url": "https://pubs.usgs.gov/sim/3292",
+      "credit": "Tanaka, K.L., et al., 2014, Geologic Map of Mars: USGS SIM 3292, doi:10.3133/sim3292",
+      "license_or_use": "",
+      "retrieved_on": "",
+      "resolution": "Min mapped outcrop 40 x 100 km",
+      "notes": "Regional context only. Label it in the UI.",
+      "status": "MISSING"
+    },
+    {
+      "id": "stop_1",
+      "kind": "image",
+      "path": "assets/stops/pia26558.jpg",
+      "source_name": "PIA26558 Curiosity Views a Fractured Boxwork Pattern Up Close",
+      "source_url": "https://www.jpl.nasa.gov/images/pia26558-curiosity-views-a-fractured-boxwork-pattern-up-close/",
+      "credit": "NASA/JPL-Caltech/MSSS",
+      "license_or_use": "",
+      "retrieved_on": "",
+      "resolution": "",
+      "notes": "Mastcam panorama",
+      "status": "MISSING"
+    },
+    {
+      "id": "stop_2",
+      "kind": "image",
+      "path": "assets/stops/pia26560.jpg",
+      "source_name": "PIA26560 Curiosity Views Boxwork Patterns at a Distance",
+      "source_url": "https://www.jpl.nasa.gov/images/pia26560-curiosity-views-boxwork-patterns-at-a-distance/",
+      "credit": "NASA/JPL-Caltech/MSSS",
+      "license_or_use": "",
+      "retrieved_on": "",
+      "resolution": "",
+      "notes": "Show 'May 2025' only: the sol/date on the source pages conflict with PIA26558",
+      "status": "MISSING"
+    },
+    {
+      "id": "rems_sample",
+      "kind": "weather",
+      "path": "data/weather/rems_sample.json",
+      "source_name": "MSL REMS reduced data (RDR), NASA PDS Atmospheres Node",
+      "source_url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MARS/curiosity/rems.html",
+      "credit": "NASA/JPL-Caltech; REMS team (CAB/INTA-CSIC); NASA PDS Atmospheres Node (NMSU)",
+      "license_or_use": "",
+      "retrieved_on": "",
+      "resolution": "",
+      "notes": "JSON must contain: sols, units, location, rdr_product (ENVRDR/MODRDR/TELRDR). Optional.",
+      "status": "MISSING"
+    },
+    {
+      "id": "route_main",
+      "kind": "route",
+      "path": "data/routes/route_main.geojson",
+      "source_name": "Interactive A* route options computed in browser from local route grid",
+      "source_url": "https://trek.nasa.gov/tiles/Mars/EQ/Gale_DEM_SMG_1m/1.0.0/WMTSCapabilities.xml",
+      "credit": "Derived by MarsWalk from the USGS MSL Gale DEM via NASA/JPL Mars Trek.",
+      "license_or_use": "",
+      "retrieved_on": "Computed locally when the user changes endpoints or parameters.",
+      "resolution": "",
+      "measured_with": "Computed with 8-connected A* over the 3.005 m DEM-derived grid; not a measured rover traverse.",
+      "notes": "Three alternatives: shortest, gentlest slope, and ridge-interest heuristic. Results depend on selected endpoints and slope threshold. Not a safety assessment.",
+      "status": "COMPUTED_ON_DEMAND"
+    },
+    {
+      "id": "route_grid",
+      "kind": "derived grid",
+      "path": "data/route-grid.js",
+      "source_name": "Gale boxwork DEM-derived 300 × 225 route grid",
+      "source_url": "https://trek.nasa.gov/tiles/Mars/EQ/Gale_DEM_SMG_1m/1.0.0/WMTSCapabilities.xml",
+      "credit": "Derived from USGS MSL Gale DEM via NASA/JPL Mars Trek.",
+      "license_or_use": "Derived data; credit source authors and USGS.",
+      "retrieved_on": "Copied into nasa_space_2 on 2026-11-15; original DEM retrieval date not recorded.",
+      "resolution": "3.005 m grid spacing; 1 m source DEM.",
+      "notes": "Bounds are recorded in data/route-area.json; grid interest field is a topographic heuristic, not a measured science value.",
+      "status": "READY"
+    },
+    {
+      "id": "route_terrain",
+      "kind": "image",
+      "path": "assets/maps/route-terrain.jpg",
+      "source_name": "Hillshade preview aligned to the separate Gale boxwork DEM grid",
+      "source_url": "https://astrogeology.usgs.gov/search/map/mars_msl_gale_merged_dem_1m",
+      "credit": "Derived from USGS MSL Gale DEM via NASA/JPL Mars Trek.",
+      "license_or_use": "Derived preview; credit source authors and USGS.",
+      "retrieved_on": "Copied into nasa_space_2 on 2026-11-15; original creation date not recorded.",
+      "resolution": "Aligned to the 900 m × 677.5 m route grid window.",
+      "notes": "Used only on route-demo.html for drawing calculated paths against the matching DEM window.",
+      "status": "READY"
+    }
+  ]
+}

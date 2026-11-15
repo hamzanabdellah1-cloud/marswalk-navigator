@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MarsWalk — NASA/USGS Route Calculation</title>
+  <meta name="description" content="Compare actual least-cost routes computed from a USGS Gale DEM grid served through NASA/JPL Mars Trek.">
+  <link rel="stylesheet" href="route-demo.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="index.html">← Overview</a>
+    <div><p class="eyebrow">NASA / USGS Gale DEM · live A* calculation</p><h1>MarsWalk Route Calculator</h1></div>
+    <button id="reset-points" class="button secondary" type="button">Reset sample points</button>
+  </header>
+  <main>
+    <section class="intro panel">
+      <p class="badge">REAL DEM CALCULATION</p>
+      <h2>Compare three possible rover paths</h2>
+      <p>Routes are calculated from a real elevation-derived grid. The calculation window is a separate, previously processed Gale boxwork area; it does not match the selected color context map on the overview page.</p>
+      <p class="caution"><strong>Research prototype:</strong> these are least-cost terrain paths, not verified rover routes or safety claims. The model does not include rocks, soil traction, wheel slip, or rover-specific limits.</p>
+    </section>
+
+    <section class="two-column">
+      <section class="panel context-panel" aria-labelledby="context-title">
+        <p class="eyebrow">YOUR SELECTED MAP · CONTEXT ONLY</p>
+        <h2 id="context-title">Color orbital preview</h2>
+        <img class="context-image" src="assets/maps/orbital.jpg" alt="Color USGS Gale orbital mosaic preview for the user's selected context area">
+        <p>This is the 2 km preview selected in Mars Trek. It provides visual context. The route results are computed for the separate boxwork DEM window shown on the right.</p>
+        <p class="small">Context bounds: 137.37402–137.40788°E, −4.70125 to −4.66751°</p>
+      </section>
+
+      <section class="panel calculation-panel" aria-labelledby="calc-title">
+        <p class="eyebrow">SEPARATE DEM WINDOW · ROUTES CALCULATED HERE</p>
+        <h2 id="calc-title">Gale boxwork terrain grid</h2>
+        <p id="grid-meta" class="small">Loading the DEM grid…</p>
+        <div class="map-readout">
+          <p><span>Start</span><strong id="start-readout">Loading…</strong></p>
+          <p><span>Destination</span><strong id="dest-readout">Loading…</strong></p>
+          <p><span>Direct separation</span><strong id="direct-readout">—</strong></p>
+        </div>
+        <div class="mode-controls" role="group" aria-label="Choose which point to set">
+          <button type="button" class="button mode active" data-mode="start" aria-pressed="true">Set start</button>
+          <button type="button" class="button mode" data-mode="dest" aria-pressed="false">Set destination</button>
+        </div>
+        <p id="click-help" class="small">Click the terrain grid to set the start. Then choose Destination and click again.</p>
+        <div class="slope-control">
+          <div><label for="slope-limit">Maximum slope allowed</label><output id="slope-output" for="slope-limit">15°</output></div>
+          <input id="slope-limit" type="range" min="5" max="30" step="1" value="15">
+          <p class="small">This is a user-selected planning threshold, not a NASA rover rule. All three routes are recalculated when it changes.</p>
+        </div>
+        <div class="route-map" id="route-map" aria-label="Interactive hillshade of the DEM calculation area. Click to set route endpoints.">
+          <img id="route-image" src="assets/maps/route-terrain.jpg" alt="Hillshade derived from the USGS Gale DEM in the separate boxwork calculation window" draggable="false">
+          <svg id="route-svg" viewBox="0 0 300 225" preserveAspectRatio="none" aria-hidden="true"><g id="route-lines"></g></svg>
+          <div id="route-markers" aria-hidden="true"></div>
+        </div>
+        <div class="map-legend"><span><i class="dot start"></i> Start</span><span><i class="dot dest"></i> Destination</span><span><i class="line shortest"></i> Shortest</span><span><i class="line gentle"></i> Gentlest</span><span><i class="line science"></i> Ridge heuristic</span></div>
+        <p id="map-status" class="map-status" aria-live="polite"></p>
+      </section>
+    </section>
+
+    <section class="panel routes-panel" aria-labelledby="routes-title">
+      <div class="section-head"><div><p class="eyebrow">ROUTE OPTIONS</p><h2 id="routes-title">Computed from the DEM grid</h2></div><p id="result-summary" class="small">Calculating…</p></div>
+      <div id="route-cards" class="route-cards" aria-live="polite"></div>
+      <details class="method">
+        <summary>How the calculation works and its limits</summary>
+        <p>The app runs 8-connected A* over a 300 × 225 grid derived from the local Gale DEM crop. Each grid cell is about 3.005 m. The DEM mosaic is labeled 1 m, but the per-pixel source resolution for this crop was not verified; some mosaic areas may use coarser inputs. Cells above the selected slope threshold and cells marked no-data are excluded.</p>
+        <ul>
+          <li><strong>Shortest:</strong> distance-only cost; the slope threshold is still a hard cutoff.</li>
+          <li><strong>Gentlest:</strong> distance cost plus a strong penalty for steep cells.</li>
+          <li><strong>Ridge heuristic:</strong> distance and slope cost plus a preference for a derived topographic-position score. It is a terrain heuristic, not measured scientific value.</li>
+        </ul>
+        <p>The DEM is a separate local boxwork window. Its original retrieval date was not recorded. Elevation uncertainty is not provided by this grid. These paths are research-planning examples, not operational rover commands.</p>
+      </details>
+    </section>
+
+    <section class="sources panel">
+      <h2>Data and credit</h2>
+      <p><a href="https://astrogeology.usgs.gov/search/map/mars_msl_gale_merged_dem_1m" target="_blank" rel="noreferrer">USGS MSL Gale Merged DEM 1 m</a> · USGS Astrogeology / MSL project, served through <a href="https://trek.nasa.gov/tiles/Mars/EQ/Gale_DEM_SMG_1m/1.0.0/WMTSCapabilities.xml" target="_blank" rel="noreferrer">NASA/JPL Mars Trek WMTS</a>.</p>
+      <p class="small">Local source crop: about 900 m × 677.5 m. Calculation grid: 300 × 225 cells at about 3.005 m spacing. Per-pixel DEM source resolution is unknown. Original DEM retrieval date was not recorded in the earlier project; files were copied here on 2026-11-15.</p>
+    </section>
+  </main>
+  <script src="data/route-grid.js"></script>
+  <script src="pathfinder.js"></script>
+  <script src="route-demo.js"></script>
+</body>
+</html>

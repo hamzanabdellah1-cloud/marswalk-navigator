@@ -1,0 +1,14 @@
+{
+  "name": "MarsWalk Navigator — selected area",
+  "coordinate_system": "Mars longitude east, latitude planetocentric; decimal degrees",
+  "center": {"longitude_east_deg": 137.39094931838102, "latitude_deg": -4.684376887543081},
+  "bounds": {
+    "west_longitude_east_deg": 137.37402,
+    "south_latitude_deg": -4.70125,
+    "east_longitude_east_deg": 137.40788,
+    "north_latitude_deg": -4.66751
+  },
+  "approximate_size_km": {"east_west": 2.0, "north_south": 2.0},
+  "bounds_order_for_clipper": ["west_lon", "south_lat", "east_lon", "north_lat"],
+  "note": "Bounds are a 2 km square around the Mars Trek view center selected by the user. Confirm the visible target remains inside before scientific interpretation."
+}

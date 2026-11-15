@@ -1,0 +1,17 @@
+{
+  "name": "Gale boxwork route calculation window",
+  "coordinate_system": "Mars longitude east, latitude planetocentric; decimal degrees",
+  "bounds": {
+    "west_longitude_east_deg": 137.29496561413424,
+    "south_latitude_deg": -4.881773789399328,
+    "east_longitude_east_deg": 137.31023438586578,
+    "north_latitude_deg": -4.870322210600672
+  },
+  "size_m": {"east_west": 900.0, "north_south": 677.5},
+  "grid": {"width": 300, "height": 225, "cell_spacing_m": 3.005, "source_dem_resolution_m": 1},
+  "source_name": "MSL Gale DEM Mosaic, 1 m source, route grid derived from local crop",
+  "source_url": "https://trek.nasa.gov/tiles/Mars/EQ/Gale_DEM_SMG_1m/1.0.0/WMTSCapabilities.xml",
+  "credit": "USGS Astrogeology / MSL project DEM, served through NASA/JPL Mars Trek",
+  "retrieved_on": "2026-11-15 (reused from existing local project; original download date not recorded)",
+  "note": "This is a separate boxwork calculation window. It does not match the selected 2 km context image in data/area.json. It is a DEM-derived planning demonstration, not a verified safe rover route."
+}

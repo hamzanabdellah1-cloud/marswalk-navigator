@@ -1,0 +1,5 @@
+raw/
+.env
+node_modules/
+*.tif
+.venv/
