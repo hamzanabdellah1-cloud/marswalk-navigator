@@ -1,0 +1,275 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\geometry{margin=2.3cm}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+\setlist{nosep}
+\usepackage{enumitem}
+
+\title{MarsWalk Navigator\\
+\large Explication des fichiers, des champs et des pipelines}
+\author{Dossier \texttt{nasa\_space\_2}}
+\date{15 novembre 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Le projet a deux fenêtres distinctes. La carte couleur sélectionnée est un contexte visuel.
+Les trois chemins sont calculés sur une autre fenêtre de Gale, à partir d'une grille issue d'un MNT
+(modèle numérique de terrain, DEM). Un chemin n'est jamais dessiné sur la carte couleur.
+\end{abstract}
+
+\section{Les deux zones}
+
+\begin{center}
+\begin{tabular}{@{}llp{6.2cm}@{}}
+\toprule
+Nom & Fichier & Rôle \\
+\midrule
+Contexte & \texttt{data/area.json} &
+Carré d'environ \(2\,\mathrm{km}\times 2\,\mathrm{km}\).
+Bornes \(137{,}37402^\circ\mathrm{E}\) à \(137{,}40788^\circ\mathrm{E}\),
+\(-4{,}70125^\circ\) à \(-4{,}66751^\circ\). \\
+Calcul de route & \texttt{data/route-area.json} &
+Fenêtre boxwork séparée, environ \(900\,\mathrm{m}\times 677{,}5\,\mathrm{m}\).
+Bornes \(137{,}29497^\circ\mathrm{E}\) à \(137{,}31023^\circ\mathrm{E}\),
+\(-4{,}88177^\circ\) à \(-4{,}87032^\circ\). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Ces deux rectangles ne se recouvrent pas. Une coordonnée lue sur la photo couleur
+n'est pas un point de départ du calculateur.
+
+\section{Pipeline A : carte de contexte}
+
+Fichiers : \texttt{index.html}, \texttt{style.css}, \texttt{script.js},
+\texttt{assets/maps/orbital.jpg}, \texttt{data/area.json}, \texttt{data/manifest.json}.
+
+\begin{enumerate}
+  \item Le navigateur charge \texttt{data/area.json} et \texttt{data/manifest.json}.
+  \item L'image JPEG est affichée. Elle n'a pas de géoréférence interne.
+  \item Chaque pixel est placé par interpolation linéaire des bornes.
+  \item Un clic enregistre un départ ou une destination. Deux marqueurs apparaissent.
+  \item La distance à vol d'oiseau est calculée. Aucune polyligne n'est dessinée.
+  \item Le bouton \emph{Open DEM route calculation} ouvre \texttt{route-demo.html}.
+\end{enumerate}
+
+\subsection{Du clic à la longitude et à la latitude}
+
+Soit \((x,y)\) la position du pointeur dans le rectangle de l'image, avec
+\(x,y\in[0,1]\). L'origine \((0,0)\) est le coin nord-ouest.
+\[
+\lambda = \lambda_W + x\,(\lambda_E-\lambda_W),
+\qquad
+\varphi = \varphi_N - y\,(\varphi_N-\varphi_S).
+\]
+\(\lambda\) est la longitude est, \(\varphi\) la latitude planétocentrique.
+Les quatre bornes viennent de \texttt{bounds} dans \texttt{area.json}.
+
+\subsection{Distance à vol d'oiseau}
+
+Ce n'est pas une route. C'est la longueur de l'arc entre les deux clics sur une sphère
+de rayon moyen IAU \(R=3389{,}5\,\mathrm{km}\) :
+\begin{align*}
+a &= \sin^2\!\left(\frac{\Delta\varphi}{2}\right)
+  + \cos\varphi_1\cos\varphi_2\sin^2\!\left(\frac{\Delta\lambda}{2}\right),\\
+d &= 2R\arcsin\sqrt{a}.
+\end{align*}
+\(R\) n'est pas une mesure de ce site. La photo n'entre pas dans le calcul.
+
+\section{Pipeline B : trois routes sur le MNT}
+
+Fichiers : \texttt{route-demo.html}, \texttt{route-demo.css}, \texttt{route-demo.js},
+\texttt{pathfinder.js}, \texttt{data/route-grid.js},
+\texttt{assets/maps/route-terrain.jpg},
+\texttt{data/dem/route\_dem\_source.tif}.
+
+\begin{enumerate}
+  \item Le MNT local a été réduit à une grille \(300\times 225\).
+  \item La page charge cette grille, puis \texttt{pathfinder.js}.
+  \item Les points d'exemple sont les cellules \((162,186)\) et \((216,150)\).
+  \item Un clic sur l'image de terrain choisit la cellule la plus proche encore franchissable.
+  \item Trois recherches A* à 8 voisins sont lancées, avec le même plafond de pente.
+  \item Les polylignes sont dessinées seulement dans le SVG posé sur \texttt{route-terrain.jpg}.
+\end{enumerate}
+
+\subsection{Cellule et coordonnée}
+
+Une cellule \((i,j)\) a son centre
+\[
+\lambda = \lambda_W + \frac{i+1/2}{W}(\lambda_E-\lambda_W),
+\qquad
+\varphi = \varphi_N - \frac{j+1/2}{H}(\varphi_N-\varphi_S),
+\]
+avec \(W=300\) et \(H=225\). Le pas de grille est \(c=3{,}005\,\mathrm{m}\).
+
+\subsection{Voisinage et cases interdites}
+
+Les huit voisins sont autorisés. Un pas diagonal n'est accepté que si les deux cases
+adjacentes du carré sont elles aussi franchissables. Une case est bloquée si
+\texttt{nodata} est vrai, ou si sa pente dépasse le plafond choisi \(s_{\max}\).
+Le plafond par défaut est \(15^\circ\). Ce n'est pas une règle NASA : c'est un paramètre de l'application.
+
+\subsection{Coût d'un pas}
+
+Pour un pas de longueur \(\Delta s\) qui arrive sur une case de pente \(s\) et de score
+de position \(I\in[0,1]\) :
+\[
+r=\frac{s}{s_{\max}},
+\qquad
+C=\Delta s\bigl(1+w_s r^2\bigr)+w_r\,\Delta s\,(1-I).
+\]
+Le pas orthogonal vaut \(c\), le pas diagonal vaut \(c\sqrt{2}\).
+L'heuristique A* est la distance octile, donc admissible pour ce voisinage :
+\[
+h=c\bigl(\max(|\Delta i|,|\Delta j|)-\min(|\Delta i|,|\Delta j|)
++\sqrt{2}\,\min(|\Delta i|,|\Delta j|)\bigr).
+\]
+
+\subsection{Les trois jeux de poids}
+
+\begin{center}
+\begin{tabular}{@{}lcccl@{}}
+\toprule
+Option & \(w_s\) & \(w_r\) & Exemple à \(15^\circ\) & Sens \\
+\midrule
+Shortest & \(0\) & \(0\) & \(210{,}6\,\mathrm{m}\), pente max \(14{,}7^\circ\) &
+distance seule, le plafond reste dur \\
+Gentlest slope & \(12\) & \(0\) & \(221{,}2\,\mathrm{m}\), pente max \(7{,}5^\circ\) &
+pénalité forte sur les cases raides \\
+Ridge heuristic & \(1{,}5\) & \(8\) & \(226{,}4\,\mathrm{m}\), pente max \(8{,}0^\circ\) &
+préfère un score topographique élevé \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Le score de crête est une heuristique de position dans le relief.
+Ce n'est pas une valeur scientifique mesurée, ni une teneur minérale.
+
+\subsection{Champs calculés sur un chemin}
+
+Pour une suite de cellules, avec \(z\) l'altitude et \(s\) la pente :
+\begin{align*}
+D &= \sum \Delta s,\\
+A &= \sum \max(z_{k}-z_{k-1},0),
+\qquad
+Descente = \sum \max(z_{k-1}-z_k,0),\\
+s_{\mathrm{max}} &= \max s_k,
+\qquad
+\bar s = \frac{\sum s_k\Delta s}{D},
+\qquad
+\bar I = \frac{\sum I_k\Delta s}{D}.
+\end{align*}
+La fiche affiche aussi le nombre de cellules et le pas \(3{,}005\,\mathrm{m}\).
+Elle dit que le résultat n'est pas une évaluation de sécurité.
+
+\section{Champs des fichiers de données}
+
+\subsection{\texttt{data/area.json}}
+
+\begin{description}
+\item[\texttt{coordinate\_system}] Longitude est, latitude planétocentrique, degrés décimaux.
+\item[\texttt{center}] Centre enregistré du carré de contexte.
+\item[\texttt{bounds}] \texttt{west}, \texttt{south}, \texttt{east}, \texttt{north}. Ce sont les seules bornes de la photo.
+\item[\texttt{approximate\_size\_km}] Taille enregistrée, environ \(2{,}0\) par \(2{,}0\,\mathrm{km}\).
+\item[\texttt{note}] Rappel : confirmer que la cible visible est bien dans le cadre avant une lecture scientifique.
+\end{description}
+
+\subsection{\texttt{data/route-area.json}}
+
+Mêmes idées de bornes, plus :
+\begin{description}
+\item[\texttt{size\_m}] \(900{,}0\,\mathrm{m}\) est--ouest et \(677{,}5\,\mathrm{m}\) nord--sud.
+\item[\texttt{grid}] \(300\times 225\), pas \(3{,}005\,\mathrm{m}\), mosaïque étiquetée \(1\,\mathrm{m}\).
+\item[\texttt{retrieved\_on}] Copie du 15 novembre 2026. La date de récupération d'origine n'est pas connue.
+\item[\texttt{note}] Fenêtre séparée. Les chemins sont des exemples de planification, pas des routes rover vérifiées.
+\end{description}
+
+\subsection{\texttt{data/route-grid.js}}
+
+Objet \texttt{MARSWALK\_GRID}, généré, à ne pas éditer à la main.
+\begin{description}
+\item[\texttt{bounds}] Mêmes bornes que \texttt{route-area.json}.
+\item[\texttt{width}, \texttt{height}] \(300\) et \(225\).
+\item[\texttt{cell\_size\_m}] \(3{,}005\).
+\item[\texttt{resolution\_m}] \(1\), étiquette de la mosaïque. La résolution réelle de chaque pixel de cette découpe n'est pas vérifiée.
+\item[\texttt{coarse\_fill}] Indique si le remplissage grossier a été marqué.
+\item[\texttt{width\_m}, \texttt{height\_m}] Emprise en mètres.
+\item[\texttt{source}] USGS Astrogeology / projet MSL, mosaïque Gale, via NASA/JPL Mars Trek.
+\item[\texttt{elev}] Altitude par case, en mètres.
+\item[\texttt{slope}] Pente par case, en degrés, déjà dérivée du MNT.
+\item[\texttt{interest}] Score de position topographique, entre \(0\) et \(1\).
+\item[\texttt{nodata}] Case sans valeur : elle est infranchissable.
+\end{description}
+
+\subsection{Chaque entrée de \texttt{data/manifest.json}}
+
+\begin{description}
+\item[\texttt{id}] Identifiant stable : \texttt{orbital\_map}, \texttt{dem}, \texttt{geology}, \texttt{stop\_1}, \texttt{stop\_2}, \texttt{rems\_sample}, \texttt{route\_main}.
+\item[\texttt{kind}] Nature : image, raster, vecteur, météo ou route.
+\item[\texttt{path}] Chemin relatif du fichier attendu.
+\item[\texttt{source\_name}, \texttt{source\_url}] Nom et page de la source.
+\item[\texttt{credit}] Citation à afficher.
+\item[\texttt{license\_or\_use}] Contrainte d'usage, si elle est connue.
+\item[\texttt{retrieved\_on}] Date de mise dans le projet. Vide si le fichier n'est pas là.
+\item[\texttt{resolution}] Résolution déclarée, ou sa limite.
+\item[\texttt{notes}] Ce que le fichier ne permet pas de dire.
+\item[\texttt{status}] \texttt{READY} ou \texttt{MISSING}.
+\item[\texttt{measured\_with}] Pour une route mesurée seulement : outil, couche et date. Vide ici, donc aucune route mesurée n'est chargée.
+\end{description}
+
+État actuel : la photo de contexte et le MNT de la fenêtre de calcul sont \texttt{READY}.
+La géologie Tanaka, les deux photos Curiosity, l'échantillon REMS et une route mesurée sont \texttt{MISSING}.
+
+\section{Rôle de chaque fichier}
+
+\begin{description}
+\item[\texttt{index.html}] Page d'accueil. Carte de contexte, lecture des coordonnées, distance à vol d'oiseau, lien vers le calculateur, mode présentation.
+\item[\texttt{style.css}] Mise en page sombre, panneau de carte clair, téléphone et ordinateur.
+\item[\texttt{script.js}] Charge les JSON, place les clics, calcule \(d\), refuse de tracer une route sur cette image.
+\item[\texttt{route-demo.html}] Page de calcul. Contexte à gauche, terrain et chemins à droite, trois fiches.
+\item[\texttt{route-demo.css}] Style de cette page seulement.
+\item[\texttt{route-demo.js}] Points, plafond de pente, appel du pathfinder, dessin SVG, texte des compromis.
+\item[\texttt{pathfinder.js}] A* à 8 voisins. Pas d'accès au DOM. Trois poids : court, doux, crête.
+\item[\texttt{data/route-grid.js}] Grille numérique utilisée par le calcul.
+\item[\texttt{assets/maps/orbital.jpg}] Aperçu JPEG du mosaïque couleur USGS Gale \(25\,\mathrm{cm}\), recadré et réduit.
+\item[\texttt{assets/maps/route-terrain.jpg}] Image de terrain de la fenêtre de calcul. Seul fond sur lequel les chemins sont dessinés.
+\item[\texttt{data/dem/route\_dem\_source.tif}] MNT source de cette fenêtre. Le navigateur ne le lit pas : il lit la grille déjà préparée.
+\item[\texttt{data/dem/README.md}] Limites du MNT : pas d'altitude inventée depuis la photo ; pas de réemploi d'un MNT d'une autre boîte.
+\item[\texttt{raw/}] Gros fichiers locaux, ignorés par git. Le TIFF couleur d'origine n'est pas chargé dans le navigateur.
+\item[\texttt{tools/check\_manifest.py}] Vérifie qu'un fichier présent a une source, un crédit et une date.
+\item[\texttt{tools/clip\_raster.py}] Découpe un raster selon une boîte. Il ne sert pas au calcul dans la page.
+\item[\texttt{DATA\_SETUP\_GUIDE.md}] Guide d'acquisition. Il ne décrit pas la démo déjà calculée.
+\item[\texttt{README.md}] Comment ouvrir les deux pages.
+\item[\texttt{data/route-data-notes.md}] Note courte sur A* et sur ce que le modèle ne contient pas.
+\item[\texttt{data/geology/}, \texttt{data/weather/}, \texttt{data/routes/}, \texttt{data/snapshots/}, \texttt{assets/stops/}] Emplacements réservés. Ils sont vides, à part un fichier marqueur.
+\end{description}
+
+\section{Ce que le projet ne calcule pas}
+
+\begin{itemize}
+\item Pas de pente lue dans la luminosité de la photo couleur.
+\item Pas de route rover certifiée, pas de traction, pas de rochers, pas de patinage.
+\item Pas de minéralogie locale. La carte Tanaka \(1:20\,000\,000\), si elle est ajoutée, reste un contexte régional.
+\item Pas d'appel à l'ancienne API Mars Rover Photos, et pas de clé dans le navigateur.
+\end{itemize}
+
+\section{Ouvrir le projet}
+
+Dans le dossier \texttt{nasa\_space\_2} :
+\begin{verbatim}
+python -m http.server 8000
+\end{verbatim}
+Puis \url{http://localhost:8000/} pour le contexte, et
+\url{http://localhost:8000/route-demo.html} pour les trois chemins.
+Le bouton \emph{Reset sample points} retrouve l'exemple
+\(210{,}6\,\mathrm{m}\), \(221{,}2\,\mathrm{m}\) et \(226{,}4\,\mathrm{m}\).
+
+\end{document}
