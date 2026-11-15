@@ -26,7 +26,6 @@
   <ul class="legend" aria-label="How to read this page">
     <li><span class="tag observed">Observed</span> Loaded from a source file</li>
     <li><span class="tag derived">Derived</span> Calculated here from bounds or from two points</li>
-    <li><span class="tag unavailable">Unavailable</span> Not in this project</li>
   </ul>
 
   <main class="layout">
@@ -59,14 +58,11 @@
             alt="Color orbital preview of the selected Gale crater site, from the USGS 25 centimeter mosaic. The JPEG is placed with the project bounds."
             draggable="false">
           <p id="image-error" class="image-error" hidden>The orbital image did not load from assets/maps/orbital.jpg.</p>
-          <svg id="geology-svg" hidden aria-hidden="true"></svg>
           <div id="markers"></div>
         </div>
       </div>
 
       <p id="no-road" class="map-flag" hidden></p>
-      <p id="geology-map-note" class="map-flag" hidden>Regional context only. This layer does not identify local mineral composition.</p>
-
       <div id="corners" class="corners" aria-label="Site corners"></div>
       <p id="area-note" class="quiet"></p>
     </section>
@@ -76,7 +72,7 @@
         <div data-spot="controls" id="controls">
           <p id="status-line" class="status-banner">Selected map is context only. Open the DEM route calculator for calculated paths.</p>
           <h2 id="plan-title">Plan</h2>
-          <p class="lede">These baselines stay visible. A map click only marks a point.</p>
+          <p class="lede">Read coordinates or mark two context points for a direct-distance estimate. This does not create a route.</p>
 
           <div class="mode-row">
             <div class="segment" role="radiogroup" aria-label="What a map click does">
@@ -87,56 +83,6 @@
             <button type="button" class="secondary" id="clear">Clear points</button>
           </div>
           <p id="mode-help" class="help">The next tap on the map sets the start.</p>
-
-          <div class="field">
-            <div class="field-head">
-              <label for="slope">Maximum allowed slope</label>
-              <span class="badge" id="slope-badge">Not applied</span>
-            </div>
-            <div class="slope-row">
-              <input id="slope" type="range" min="5" max="30" step="1" value="15" aria-describedby="slope-help">
-              <output id="slope-value" for="slope">15°</output>
-            </div>
-            <p id="slope-help" class="help">Starting baseline in this app: 15°, adjustable from 5° to 30°. This is not a mission rule. It is recorded only, and it is inactive until a DEM for this same box is loaded.</p>
-          </div>
-
-          <div class="field">
-            <div class="field-head">
-              <span id="distance-label">Distance preference</span>
-              <span class="badge">Not applied</span>
-            </div>
-            <div class="segment" role="radiogroup" aria-labelledby="distance-label">
-              <button type="button" data-distance="shorter" aria-pressed="false">Shorter</button>
-              <button type="button" data-distance="balanced" aria-pressed="true">Balanced</button>
-              <button type="button" data-distance="longer" aria-pressed="false">Longer</button>
-            </div>
-            <p class="help">How much a future route should care about length. Length is not changed on the map.</p>
-          </div>
-
-          <div class="field">
-            <div class="field-head">
-              <span id="science-label">Science-interest preference</span>
-              <span class="badge">Not applied</span>
-            </div>
-            <div class="segment" role="radiogroup" aria-labelledby="science-label">
-              <button type="button" data-science="low" aria-pressed="false">Low</button>
-              <button type="button" data-science="medium" aria-pressed="true">Medium</button>
-              <button type="button" data-science="high" aria-pressed="false">High</button>
-            </div>
-            <p class="help">How much a future route should favor science stops. No local stops are loaded, so this preference cannot pick a place.</p>
-          </div>
-
-          <div class="field" id="geology-field">
-            <div class="field-head">
-              <span id="geology-label">Geology context</span>
-              <span class="badge" id="geology-badge">Not loaded</span>
-            </div>
-            <label class="check" for="geology">
-              <input type="checkbox" id="geology" disabled>
-              Show regional geology
-            </label>
-            <p class="help" id="geology-help">Reserved for the global geologic map. When that layer is added, label it regional context only. It does not identify local mineral composition.</p>
-          </div>
         </div>
 
         <div data-spot="route" id="briefing-spot">

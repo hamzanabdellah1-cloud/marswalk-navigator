@@ -8,18 +8,6 @@ const MARS_MEAN_RADIUS_KM = 3389.5;
 const DEMO_MS = 90000;
 const STEP_MS = 15000;
 
-const DISTANCE_LABELS = {
-  shorter: "Shorter",
-  balanced: "Balanced",
-  longer: "Longer"
-};
-
-const SCIENCE_LABELS = {
-  low: "Low",
-  medium: "Medium",
-  high: "High"
-};
-
 const DEMO_STEPS = [
   {
     spot: null,
@@ -38,8 +26,8 @@ const DEMO_STEPS = [
   },
   {
     spot: "controls",
-    title: "Planning baselines",
-    body: "Tap this map to read coordinates or mark context points. These planning controls do not drive routes here. The route calculator has its own endpoints and slope setting for the separate DEM window."
+    title: "Mark context points",
+    body: "Tap this map to read coordinates or mark a start and destination for a direct-distance estimate. These points do not change the separate DEM route calculation."
   },
   {
     spot: "route",
@@ -49,7 +37,7 @@ const DEMO_STEPS = [
   {
     spot: "sources",
     title: "Limits and sources",
-    body: "The preview is a small JPEG, not the original GeoTIFF. The separate DEM calculator shows its source, parameters, and calculated route alternatives. Regional geology remains context only, not a mineral map.",
+    body: "The preview is a small JPEG, not the original GeoTIFF. The separate DEM calculator shows its source, parameters, and calculated route alternatives.",
     limits: true
   }
 ];
@@ -57,12 +45,9 @@ const DEMO_STEPS = [
 const state = {
   area: null,
   manifest: null,
-  geology: null,
   mode: "start",
   start: null,
-  destination: null,
-  distance: "balanced",
-  science: "medium"
+  destination: null
 };
 
 const present = {
@@ -114,11 +99,6 @@ function formatSeparation(meters) {
 
 function assetById(id) {
   return state.manifest?.assets?.find((asset) => asset.id === id) || null;
-}
-
-function demReady() {
-  const dem = assetById("dem");
-  return Boolean(dem && dem.status === "READY");
 }
 
 function showError(message) {
@@ -237,13 +217,9 @@ function renderMarkers() {
 }
 
 function parameterRows() {
-  const slope = $("slope").value;
   const rows = [
     ["Start", state.start ? `${formatPair(state.start.lon, state.start.lat)}. User click, placed with the area bounds.` : "Not set."],
-    ["Destination", state.destination ? `${formatPair(state.destination.lon, state.destination.lat)}. User click, placed with the area bounds.` : "Not set."],
-    ["Maximum slope", `${slope}°. This context map has no matching DEM. The selected limit is applied in the separate route calculator.`],
-    ["Distance", `${DISTANCE_LABELS[state.distance]}. Planning baseline. Not applied.`],
-    ["Science interest", `${SCIENCE_LABELS[state.science]}. Planning baseline. Not applied. No local stops are loaded.`]
+    ["Destination", state.destination ? `${formatPair(state.destination.lon, state.destination.lat)}. User click, placed with the area bounds.` : "Not set."]
   ];
   return rows.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("");
 }
@@ -260,8 +236,6 @@ function separationBlock() {
 }
 
 function renderBriefing() {
-  const demIsReady = demReady();
-  const bothPoints = state.start && state.destination;
   const status = "Context map only · DEM routes are calculated in the separate route window";
   const why = "This selected image is for visual context and point coordinates only. A separate local Gale DEM window powers the route calculator. Because the two windows cover different ground, calculated DEM paths are shown only on their matching terrain view, not over this context map.";
 
@@ -290,7 +264,6 @@ function renderBriefing() {
     </div>
   `;
 
-  $("slope-badge").textContent = demIsReady ? "No elevation grid" : "Not applied";
 }
 
 function fieldOrPending(value, emptyLabel) {
@@ -329,86 +302,9 @@ function sourceCard(asset, options = {}) {
   `;
 }
 
-function renderGeologyHelp(geology) {
-  const credit = geology?.credit || "Tanaka and others, 2014, USGS SIM 3292";
-  const resolution = geology?.resolution || "1:20,000,000";
-  $("geology-help").textContent = `Reserved. ${credit}. Map scale in the record: ${resolution}. When this layer is added, it is regional context only. It does not identify local mineral composition.`;
-  const loaded = geology && geology.status === "READY" && state.geology;
-  $("geology").disabled = !loaded;
-  $("geology-badge").textContent = loaded ? "Optional" : "Not loaded";
-  if (!loaded) {
-    $("geology").checked = false;
-    drawGeology(false);
-  }
-}
-
-function unitLabel(properties) {
-  const props = properties || {};
-  const keys = ["UnitName", "UNIT_NAME", "Unit", "Name", "LABEL", "Label", "Code", "CODE", "SYMBOL", "Symbol"];
-  const found = keys.map((key) => props[key]).find((value) => String(value || "").trim());
-  return found ? `Regional map unit: ${found}` : "Regional map unit name is not in this feature.";
-}
-
-function ringsFromGeometry(geometry) {
-  if (!geometry) return [];
-  if (geometry.type === "Polygon") return geometry.coordinates;
-  if (geometry.type === "MultiPolygon") return geometry.coordinates.flat();
-  return [];
-}
-
-function drawGeology(show) {
-  const svg = $("geology-svg");
-  const note = $("geology-map-note");
-  svg.replaceChildren();
-  if (!show || !state.geology || !state.area) {
-    svg.hidden = true;
-    note.hidden = true;
-    return;
-  }
-
-  const bounds = state.area.bounds;
-  const width = 1000;
-  const height = 1000;
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.setAttribute("preserveAspectRatio", "none");
-  const project = (lon, lat) => {
-    const x = (lon - bounds.west_longitude_east_deg)
-      / (bounds.east_longitude_east_deg - bounds.west_longitude_east_deg) * width;
-    const y = (bounds.north_latitude_deg - lat)
-      / (bounds.north_latitude_deg - bounds.south_latitude_deg) * height;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  };
-
-  const features = state.geology.features || [];
-  features.forEach((feature) => {
-    ringsFromGeometry(feature.geometry).forEach((ring) => {
-      if (!Array.isArray(ring)) return;
-      const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-      polygon.setAttribute("points", ring.map(([lon, lat]) => project(lon, lat)).join(" "));
-      polygon.setAttribute("fill", "rgba(224, 138, 69, 0.18)");
-      polygon.setAttribute("stroke", "#8a3e12");
-      polygon.setAttribute("stroke-width", "8");
-      const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-      title.textContent = unitLabel(feature.properties);
-      polygon.append(title);
-      svg.append(polygon);
-    });
-  });
-
-  svg.hidden = false;
-  note.hidden = false;
-  note.textContent = features.length
-    ? `Regional context only. ${features.length} map unit${features.length === 1 ? "" : "s"} drawn from the global geology file. This layer does not identify local mineral composition.`
-    : "Regional context only. The geology file has no features to draw. It does not identify local mineral composition.";
-}
-
 function renderSources() {
   const orbital = assetById("orbital_map");
   const dem = assetById("dem");
-  const geology = assetById("geology");
-  const rest = ["stop_1", "stop_2", "rems_sample"]
-    .map(assetById)
-    .filter(Boolean);
 
   const primary = [
     orbital && sourceCard(orbital, {
@@ -417,35 +313,10 @@ function renderSources() {
     dem && sourceCard(dem, {
       title: dem.source_name,
       extra: "This DEM covers the separate route window in data/route-area.json. The selected context map is elsewhere; calculated route lines are kept on the matching DEM view."
-    }),
-    geology && sourceCard(geology, {
-      extra: "Regional context only. This global map does not identify local mineral composition inside the 2 km site."
     })
   ].filter(Boolean).join("");
 
-  const extra = rest.map((asset) => sourceCard(asset, {
-    title: asset.source_name || "Measured route"
-  })).join("");
-
-  $("source-list").innerHTML = `
-    ${primary}
-    <details>
-      <summary>Optional additions not loaded: rover photos and weather sample</summary>
-      ${extra}
-    </details>
-  `;
-  renderGeologyHelp(geology);
-}
-
-async function loadGeology(asset) {
-  if (!asset || asset.status !== "READY" || !asset.path) return null;
-  try {
-    const response = await fetch(asset.path);
-    if (!response.ok) return null;
-    return await response.json();
-  } catch (error) {
-    return null;
-  }
+  $("source-list").innerHTML = primary;
 }
 
 function onMapClick(event) {
@@ -511,17 +382,13 @@ function setSpotlight(spot, scroll) {
 function limitList() {
   const orbital = assetById("orbital_map");
   const dem = assetById("dem");
-  const geology = assetById("geology");
   const items = [
     "The map is a resized JPEG preview. The original GeoTIFF stays out of the browser.",
     "Coordinates are not stored in the JPEG. They come from the selected bounds.",
-    "No DEM clip for this box is loaded. Slope, hazard, and route cost stay off. Brightness is not turned into elevation.",
-    "Geology is not loaded. The reserved Tanaka map is global context only, at the scale in the source record, and it does not identify local minerals.",
-    "Curiosity photos, a REMS weather sample, and a measured route are not loaded.",
-    "This page does not call the Mars Rover Photos API.",
+    "No DEM covers this selected context box, so slope and route cost are not calculated here. The separate route calculator uses its own DEM window. Image brightness is not turned into elevation.",
     "The as-the-crow-flies figure is the direct distance between two clicks. It is not a calculated route. A path is not drawn."
   ];
-  const links = [orbital, dem, geology].filter(Boolean).map((asset) => {
+  const links = [orbital, dem].filter(Boolean).map((asset) => {
     const label = asset.source_name || asset.id;
     return `<li>${externalLink(asset.source_url, label)}. ${fieldOrPending(asset.credit, "No credit in the record")}</li>`;
   }).join("");
@@ -632,29 +499,6 @@ function bindControls() {
     button.addEventListener("click", () => setMode(button.dataset.mode));
   });
   $("clear").addEventListener("click", clearPoints);
-  $("slope").addEventListener("input", () => {
-    $("slope-value").textContent = `${$("slope").value}°`;
-    renderBriefing();
-  });
-  document.querySelectorAll("[data-distance]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.distance = button.dataset.distance;
-      document.querySelectorAll("[data-distance]").forEach((item) => {
-        item.setAttribute("aria-pressed", String(item === button));
-      });
-      renderBriefing();
-    });
-  });
-  document.querySelectorAll("[data-science]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.science = button.dataset.science;
-      document.querySelectorAll("[data-science]").forEach((item) => {
-        item.setAttribute("aria-pressed", String(item === button));
-      });
-      renderBriefing();
-    });
-  });
-  $("geology").addEventListener("change", () => drawGeology($("geology").checked));
 
   const viewport = $("viewport");
   viewport.addEventListener("click", onMapClick);
@@ -715,7 +559,6 @@ async function init() {
   if (orbital?.path && $("orbital").getAttribute("src") !== orbital.path) {
     $("orbital").src = orbital.path;
   }
-  state.geology = await loadGeology(assetById("geology"));
   renderSite();
   renderSources();
   renderBriefing();

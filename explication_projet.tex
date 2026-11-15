@@ -212,8 +212,8 @@ Objet \texttt{MARSWALK\_GRID}, généré, à ne pas éditer à la main.
 \subsection{Chaque entrée de \texttt{data/manifest.json}}
 
 \begin{description}
-\item[\texttt{id}] Identifiant stable : \texttt{orbital\_map}, \texttt{dem}, \texttt{geology}, \texttt{stop\_1}, \texttt{stop\_2}, \texttt{rems\_sample}, \texttt{route\_main}.
-\item[\texttt{kind}] Nature : image, raster, vecteur, météo ou route.
+\item[\texttt{id}] Identifiant stable : \texttt{orbital\_map}, \texttt{dem}, \texttt{route\_grid}, \texttt{route\_terrain}.
+\item[\texttt{kind}] Nature : image, raster ou grille dérivée.
 \item[\texttt{path}] Chemin relatif du fichier attendu.
 \item[\texttt{source\_name}, \texttt{source\_url}] Nom et page de la source.
 \item[\texttt{credit}] Citation à afficher.
@@ -221,12 +221,10 @@ Objet \texttt{MARSWALK\_GRID}, généré, à ne pas éditer à la main.
 \item[\texttt{retrieved\_on}] Date de mise dans le projet. Vide si le fichier n'est pas là.
 \item[\texttt{resolution}] Résolution déclarée, ou sa limite.
 \item[\texttt{notes}] Ce que le fichier ne permet pas de dire.
-\item[\texttt{status}] \texttt{READY} ou \texttt{MISSING}.
-\item[\texttt{measured\_with}] Pour une route mesurée seulement : outil, couche et date. Vide ici, donc aucune route mesurée n'est chargée.
+\item[\texttt{status}] Les quatre fichiers intégrés au prototype sont \texttt{READY}.
 \end{description}
 
-État actuel : la photo de contexte et le MNT de la fenêtre de calcul sont \texttt{READY}.
-La géologie Tanaka, les deux photos Curiosity, l'échantillon REMS et une route mesurée sont \texttt{MISSING}.
+État actuel : la carte couleur, le MNT de la fenêtre de calcul, la grille dérivée et l'image de relief correspondante sont intégrés. Les fonctionnalités optionnelles sans données (géologie, galerie d'images et météo) ont été retirées de l'interface.
 
 \section{Rôle de chaque fichier}
 
@@ -249,7 +247,6 @@ La géologie Tanaka, les deux photos Curiosity, l'échantillon REMS et une route
 \item[\texttt{DATA\_SETUP\_GUIDE.md}] Guide d'acquisition. Il ne décrit pas la démo déjà calculée.
 \item[\texttt{README.md}] Comment ouvrir les deux pages.
 \item[\texttt{data/route-data-notes.md}] Note courte sur A* et sur ce que le modèle ne contient pas.
-\item[\texttt{data/geology/}, \texttt{data/weather/}, \texttt{data/routes/}, \texttt{data/snapshots/}, \texttt{assets/stops/}] Emplacements réservés. Ils sont vides, à part un fichier marqueur.
 \end{description}
 
 \section{Ce que le projet ne calcule pas}
@@ -257,7 +254,7 @@ La géologie Tanaka, les deux photos Curiosity, l'échantillon REMS et une route
 \begin{itemize}
 \item Pas de pente lue dans la luminosité de la photo couleur.
 \item Pas de route rover certifiée, pas de traction, pas de rochers, pas de patinage.
-\item Pas de minéralogie locale. La carte Tanaka \(1:20\,000\,000\), si elle est ajoutée, reste un contexte régional.
+\item Pas de géologie ou de minéralogie locale dans cette version.
 \item Pas d'appel à l'ancienne API Mars Rover Photos, et pas de clé dans le navigateur.
 \end{itemize}
 

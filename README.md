@@ -18,3 +18,7 @@ The route calculator runs 8-connected A* over the real DEM-derived grid. It comp
 ## Credits and limitations
 
 The route grid and hillshade were inherited from the earlier local project. Credit the USGS MSL Gale DEM Mosaic through NASA/JPL Mars Trek. The original DEM retrieval date was not recorded; the data files were copied into this project on 2026-11-15. See `data/manifest.json` and `data/route-data-notes.md`.
+
+## Included data only
+
+The current app includes the selected color context map and the separate DEM route window. The geology overlay, rover-photo gallery, and weather sample were removed because their data files were not present. The manifest lists only files that are included and used by these pages. The overview's planning controls only place context points; use the DEM route calculator to change route endpoints and slope settings.
